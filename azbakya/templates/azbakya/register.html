@@ -1,0 +1,38 @@
+{% extends "azbakya/base.html" %}
+{% block title %}Register{% endblock %}
+{% block body %}
+
+  </nav>
+
+  <h1 style="text-align: center;margin-bottom:35px;">Sign Up</h1>
+
+  <form class="navbar-form" method="post" style="font-size:20px;width:1000px;margin:auto" enctype="multipart/form-data" action="{% url 'azbakya:register' %}">
+    {% csrf_token %}
+    <div style="margin-left:150px">
+    {% for field in form %}
+      <div style="width:50%;float:left;dispaly:inline">
+        <p>{{ field.label }}</p>
+        <p>{{ field }}</p>
+        <div>
+          <p>{{ field.errors }}</p>
+        </div>
+      </div>
+    {% endfor %}
+    {% for field in profile_form %}
+      <div style="width:50%;float:left;dispaly:inline">
+        <p>{{ field.label }}</p>
+        <p>{{ field }}</p>
+        <p>{{ field.errors}}</p>
+      </div>
+    {% endfor %}
+    </div>
+      <div style="width:100%;float:left;dispaly:inline;text-align:center">
+        <button type="submit" class="btn btn-default">Sign Up</button>
+      </div>
+  </form>
+  <div style="width:100%;float:left;dispaly:inline;text-align:center;margin-top:20px">
+    <p style="text-align: center">Already a member ? <a href="{% url 'azbakya:signin' %}">Sign In</a></p>
+  </div>
+
+
+{% endblock %}

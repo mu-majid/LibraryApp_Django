@@ -1,0 +1,147 @@
+{% extends "azbakya/navBar.html" %}
+{% block title %}BookDetail{% endblock %}
+{% load staticfiles %}
+{% block body %}
+{% csrf_token %}
+
+<div style="width:1200px;margin:auto">
+  <div style="float:left;width=300px;text-align:center;margin:auto">
+    <img src="{{book.image.url}}" width="300px" height="400px"/>
+
+    {% if book == book_read %}
+        <button id="{{book.id}}" onclick="alreadyReadFn()" class="btn btn-default" style="display:block;margin:auto;margin-top:10px;color:white;background-color:red">Already Read</button>
+    {% else %}
+        <button id="{{book.id}}" onclick="markReadFn()" class="btn btn-default" style="display:block;margin:auto;margin-top:10px">Mark as Read</button>
+    {% endif %}
+
+    {% if book == book_wish %}
+        <button id="wish{{book.id}}" onclick="removeWishFn()" class="btn btn-default" style="display:block;margin:auto;margin-top:10px;color:black;background-color:yellow">Remove from Wishlist</button>
+    {% else %}
+        <button id="wish{{book.id}}" onclick="addWishFn()" class="btn btn-default" style="display:block;margin:auto;margin-top:10px">Add to Wishlist</button>
+    {% endif %}
+
+    <form style="text-align:center;width=300px;margin:auto" method="get" onsubmit="">
+      <fieldset class="rating">
+
+          <input type="radio" id="star5" name="rating" value="5" onclick="rateFn(this.id)"/>
+          <label class = "full" for="star5" title="Awesome - 5 stars"></label>
+
+          <input type="radio" id="star4" name="rating" value="4" onclick="rateFn(this.id)"/ >
+          <label class = "full" for="star4" title="Pretty good - 4 stars"></label>
+
+          <input type="radio" id="star3" name="rating" value="3" onclick="rateFn(this.id)"/>
+          <label class = "full" for="star3" title="Meh - 3 stars"></label>
+
+          <input type="radio" id="star2" name="rating" value="2" onclick="rateFn(this.id)"/>
+          <label class = "full" for="star2" title="Kinda bad - 2 stars"></label>
+
+          <input type="radio" id="star1" name="rating" value="1" onclick="rateFn(this.id)"/>
+          <label class = "full" for="star1" title="Sucks big time - 1 star"></label>
+
+          <script>
+
+            document.getElementById('star{{book_rate}}').checked = true;
+
+            var rateFn = function(ID){
+              let csrftoken = $('[name=csrfmiddlewaretoken]').val();
+              var xhttp = new XMLHttpRequest();
+              xhttp.responseType = 'json';
+              xhttp.onreadystatechange = function() {
+                  if (this.status == 200) {
+                      document.getElementById(ID).checked = true;
+                 }
+              }
+              rate = document.getElementById(ID).value;
+              rate = "" + rate;
+              xhttp.open("POST", "/azbakya/rating/{{book.id}}");
+              xhttp.setRequestHeader('X-CSRFToken', csrftoken);
+              xhttp.send('{"rating":'+rate+'}');
+            }
+
+          </script>
+
+      </fieldset>
+    </form>
+
+
+  </div>
+
+  <script>
+
+    var markReadFn = function(){
+      var xhttp = new XMLHttpRequest();
+      xhttp.responseType = 'json';
+      xhttp.onreadystatechange = function() {
+          if (this.status == 200) {
+              document.getElementById("{{book.id}}").style.backgroundColor = 'red';
+              document.getElementById("{{book.id}}").style.color = 'white';
+              document.getElementById("{{book.id}}").innerHTML = "Already Read";
+              document.getElementById("{{book.id}}").onclick = alreadyReadFn;
+         }
+      }
+      xhttp.open("GET", "/azbakya/mark_read/{{book.id}}");
+      xhttp.send();
+    }
+
+    var alreadyReadFn = function(){
+      var xhttp = new XMLHttpRequest();
+      xhttp.responseType = 'json';
+      xhttp.onreadystatechange = function() {
+          if (this.status == 200) {
+              document.getElementById("{{book.id}}").style.backgroundColor = 'white';
+              document.getElementById("{{book.id}}").style.color = 'black';
+              document.getElementById("{{book.id}}").innerHTML = "Mark as Read";
+              document.getElementById("{{book.id}}").onclick = markReadFn;
+         }
+      }
+      xhttp.open("GET", "/azbakya/already_read/{{book.id}}");
+      xhttp.send();
+    }
+
+  </script>
+
+  <script>
+
+    var addWishFn = function(){
+      var xhttp = new XMLHttpRequest();
+      xhttp.responseType = 'json';
+      xhttp.onreadystatechange = function() {
+          if (this.status == 200) {
+              document.getElementById("wish{{book.id}}").style.backgroundColor = 'yellow';
+              document.getElementById("wish{{book.id}}").style.color = 'black';
+              document.getElementById("wish{{book.id}}").innerHTML = "Remove from Wishlist";
+              document.getElementById("wish{{book.id}}").onclick = removeWishFn;
+         }
+      }
+      xhttp.open("GET", "/azbakya/add_wish/{{book.id}}");
+      xhttp.send();
+    }
+
+    var removeWishFn = function(){
+      var xhttp = new XMLHttpRequest();
+      xhttp.responseType = 'json';
+      xhttp.onreadystatechange = function() {
+          if (this.status == 200) {
+              document.getElementById("wish{{book.id}}").style.backgroundColor = 'white';
+              document.getElementById("wish{{book.id}}").style.color = 'black';
+              document.getElementById("wish{{book.id}}").innerHTML = "Mark as Read";
+              document.getElementById("wish{{book.id}}").onclick = addWishFn;
+         }
+      }
+      xhttp.open("GET", "/azbakya/remove_wish/{{book.id}}");
+      xhttp.send();
+    }
+
+  </script>
+
+  <div style="width:900px;display:inline-block;float:left;padding:30px;padding-top:0px" >
+    <h1>{{book.title}}</h1>
+    <h3><strong>Author : </strong><a href="{% url 'azbakya:authorDetail' book.author.id %}">{{book.author}}</a></h3>
+    <h3><strong>Date of Publish : </strong>{{book.publish}}</h3>
+    <h3><strong>Summary : </strong></h3><p style="width:80%">{{book.summary}}</p>
+  </div>
+</div>
+
+
+
+{% endblock %}
