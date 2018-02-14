@@ -1,0 +1,124 @@
+{% extends "azbakya/navBar.html" %}
+{% load staticfiles %}
+{% block title %}BookList{% endblock %}
+{% block body %}
+<form class="navbar-form" role="search" method="get" action="{% url 'azbakya:index' %}" style="text-align: center">
+    <div class="form-group">
+        <input type="text" class="form-control" name="q" value="{{ request.GET.q }}" placeholder="search for a book" style="width:500px">
+    </div>
+    <button type="submit" class="btn btn-default">Search</button>
+</form>
+
+<div style="text-align:center;margin-top:25px;width:1000px;margin:auto">
+{% for book in book_list %}
+  <div style="width:30% ;display:inline-block;margin:15px;float:left">
+    <a href="{% url 'azbakya:bookDetail' book.id %}"><img src="{{book.image.url}}" width="110px" height="150px"/></a>
+    <h4><a href="{% url 'azbakya:bookDetail' book.id %}">{{book.title}}</h4></a>
+
+    {% if book in book_read %}
+        <button id="{{book.id}}" onclick="alreadyReadFn('{{book.id}}')" style="background-color:red;color:white" class="btn btn-default" style="margin:5px">Already Read</button>
+    {% else %}
+        <button id="{{book.id}}" onclick="markReadFn('{{book.id}}')" class="btn btn-default" style="margin:5px">Mark as Read</button>
+    {% endif %}
+
+    {% if book in book_wish %}
+        <button id="wish{{book.id}}" onclick="removeWishFn('wish{{book.id}}')" style="background-color:yellow;color:black" class="btn btn-default">Remove from Wishlist</button>
+    {% else %}
+        <button id="wish{{book.id}}" onclick="addWishFn('wish{{book.id}}')" class="btn btn-default">Add to Wishlist</button>
+    {% endif %}
+
+  </div>
+{% endfor %}
+</div>
+
+<script>
+
+  var markReadFn = function(bookID){
+    var xhttp = new XMLHttpRequest();
+    xhttp.responseType = 'json';
+    xhttp.onreadystatechange = function() {
+        if (this.status == 200) {
+            document.getElementById(bookID).style.backgroundColor = 'red';
+            document.getElementById(bookID).style.color = 'white';
+            document.getElementById(bookID).innerHTML = "Already Read";
+            var fn = function(){alreadyReadFn(bookID)};
+            document.getElementById(bookID).onclick = fn;
+       }
+    }
+    xhttp.open("GET", "/azbakya/mark_read/"+bookID);
+    xhttp.send();
+  }
+
+  var alreadyReadFn = function(bookID){
+    var xhttp = new XMLHttpRequest();
+    xhttp.responseType = 'json';
+    xhttp.onreadystatechange = function() {
+        if (this.status == 200) {
+            document.getElementById(bookID).style.backgroundColor = 'white';
+            document.getElementById(bookID).style.color = 'black';
+            document.getElementById(bookID).innerHTML = "Mark As Read";
+            var fn = function(){markReadFn(bookID)};
+            document.getElementById(bookID).onclick = fn;
+       }
+    }
+    xhttp.open("GET", "/azbakya/already_read/"+bookID);
+    xhttp.send();
+  }
+
+</script>
+
+<script>
+
+  var addWishFn = function(bookID){
+    var xhttp = new XMLHttpRequest();
+    xhttp.responseType = 'json';
+    xhttp.onreadystatechange = function() {
+        if (this.status == 200) {
+            document.getElementById(bookID).style.backgroundColor = 'yellow';
+            document.getElementById(bookID).style.color = 'black';
+            document.getElementById(bookID).innerHTML = "Remove From Wishlist";
+            var fn = function(){removeWishFn(bookID)};
+            document.getElementById(bookID).onclick = fn;
+       }
+    }
+    xhttp.open("GET", "/azbakya/add_wish/"+bookID[4]);
+    xhttp.send();
+  }
+
+  var removeWishFn = function(bookID){
+    var xhttp = new XMLHttpRequest();
+    xhttp.responseType = 'json';
+    xhttp.onreadystatechange = function() {
+        if (this.status == 200) {
+            document.getElementById(bookID).style.backgroundColor = 'white';
+            document.getElementById(bookID).style.color = 'black';
+            document.getElementById(bookID).innerHTML = "Add To Wishlist";
+            var fn = function(){addWishFn(bookID)};
+            document.getElementById(bookID).onclick = fn;
+       }
+    }
+    xhttp.open("GET", "/azbakya/remove_wish/"+bookID[4]);
+    xhttp.send();
+  }
+
+</script>
+
+{% if is_paginated %}
+  <div style="text-align:center;margin-top:25px;width:1000px;margin:auto;display:block">
+    <div class="pagination" style="width:100%">
+        <span class="page-links">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+            <span class="page-current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+            {% endif %}
+        </span>
+    </div>
+  </div>
+{% endif %}
+
+{% endblock %}
