@@ -1,0 +1,84 @@
+{% extends "azbakya/navBar.html" %}
+{% load staticfiles %}
+{% block title %}AuthorList{% endblock %}
+{% block body %}
+
+
+<div style="text-align:center;margin-top:25px;width:1000px;margin:auto">
+{% for author in author_list %}
+  <div style="width:30% ;display:inline-block;margin:15px;float:left">
+    <a href="{% url 'azbakya:authorDetail' author.id %}">
+      <img src="{{author.image.url}}" width="160px" height="180px"/>
+    </a>
+    <h4>
+      <a href="{% url 'azbakya:authorDetail' author.id %}">
+        {{author.name}}
+      </a>
+    </h4>
+
+    {% if author in author_follow %}
+        <button id="{{author.id}}" onclick="unfollowFn('{{author.id}}')" class="authorFollow btn btn-default" style="background-color:green;color:white">UnFollow</button>
+    {% else %}
+        <button id="{{author.id}}" onclick="followFn('{{author.id}}')" class="authorFollow btn btn-default" style="">Follow</button>
+    {% endif %}
+
+  </div>
+{% endfor %}
+</div>
+
+<script>
+
+  var followFn = function(authorID){
+    var xhttp = new XMLHttpRequest();
+    xhttp.responseType = 'json';
+    xhttp.onreadystatechange = function() {
+        if (this.status == 200) {
+            document.getElementById(authorID).style.backgroundColor = 'green';
+            document.getElementById(authorID).style.color = 'white';
+            document.getElementById(authorID).innerHTML = "UnFollow";
+            var fn = function(){unfollowFn(authorID)};
+            document.getElementById(authorID).onclick = fn;
+       }
+    }
+    xhttp.open("GET", "/azbakya/follow/"+authorID);
+    xhttp.send();
+  }
+
+  var unfollowFn = function(authorID){
+    var xhttp = new XMLHttpRequest();
+    xhttp.responseType = 'json';
+    xhttp.onreadystatechange = function() {
+        if (this.status == 200) {
+            document.getElementById(authorID).style.backgroundColor = 'white';
+            document.getElementById(authorID).style.color = 'black';
+            document.getElementById(authorID).innerHTML = "Follow";
+            var fn = function(){followFn(authorID)};
+            document.getElementById(authorID).onclick = fn;
+       }
+    }
+    xhttp.open("GET", "/azbakya/unfollow/"+authorID);
+    xhttp.send();
+  }
+
+</script>
+
+
+{% if is_paginated %}
+<div style="text-align:center;margin-top:25px;width:1000px;margin:auto;display:block">
+    <div class="pagination">
+        <span class="page-links">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+            <span class="page-current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+            {% endif %}
+        </span>
+    </div>
+  </div>
+{% endif %}
+
+{% endblock %}

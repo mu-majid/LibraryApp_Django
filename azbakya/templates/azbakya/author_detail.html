@@ -1,0 +1,74 @@
+{% extends "azbakya/navBar.html" %}
+{% block title %}AuthorDetail{% endblock %}
+{% block body %}
+{% csrf_token %}
+
+<div style="width:1200px;margin:auto">
+  <div style="float:left;width=300px;text-align:center;margin:auto">
+    <img src="{{author.image.url}}" width="300px" height="400px"/>
+
+    {% if author in author_follow %}
+
+        <button id="{{author.id}}" onclick="unfollowFn()" class="btn btn-default" style="display:block;margin:auto;margin-top:10px;color:white;background-color:green">UnFollow</button>
+
+    {% else %}
+
+        <button id="{{author.id}}" onclick="followFn()" class="btn btn-default" style="display:block;margin:auto;margin-top:10px">Follow</button>
+
+    {% endif %}
+
+        <script>
+
+          var followFn = function(){
+            var xhttp = new XMLHttpRequest();
+            xhttp.responseType = 'json';
+            xhttp.onreadystatechange = function() {
+                if (this.status == 200) {
+                    document.getElementById("{{author.id}}").style.backgroundColor = 'green';
+                    document.getElementById("{{author.id}}").style.color = 'white';
+                    document.getElementById("{{author.id}}").innerHTML = "UnFollow";
+                    document.getElementById("{{author.id}}").onclick = unfollowFn;
+               }
+            }
+            xhttp.open("GET", "/azbakya/follow/{{author.id}}");
+            xhttp.send();
+          }
+
+          var unfollowFn = function(){
+            var xhttp = new XMLHttpRequest();
+            xhttp.responseType = 'json';
+            xhttp.onreadystatechange = function() {
+                if (this.status == 200) {
+                    document.getElementById("{{author.id}}").style.backgroundColor = 'white';
+                    document.getElementById("{{author.id}}").style.color = 'black';
+                    document.getElementById("{{author.id}}").innerHTML = "Follow";
+                    document.getElementById("{{author.id}}").onclick = followFn;
+               }
+            }
+            xhttp.open("GET", "/azbakya/unfollow/{{author.id}}");
+            xhttp.send();
+          }
+
+        </script>
+
+
+
+  </div>
+
+  <div style="width:900px;display:inline-block;float:left;padding:30px;padding-top:0px" >
+    <h1>{{author.name}}</h1>
+    <h3><strong>Date of Birth : </strong>{{author.dob}}</h3>
+    <h3><strong>biography : </strong></h3>
+    <p style="width:80%">{{author.bio}}</p>
+    <h3><strong>Books : </strong></h3>
+    <p style="width:80%">
+      {% for book in author.book_set.all %}
+        <a href="{% url 'azbakya:bookDetail' book.id %}"><img src="{{book.image.url}}" width="100px" height="130px" style="margin-right:20px;"/></a>
+      {% endfor %}
+    </p>
+  </div>
+</div>
+
+
+
+{% endblock %}

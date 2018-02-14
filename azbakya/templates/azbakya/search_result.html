@@ -1,0 +1,50 @@
+{% extends "azbakya/navBar.html" %}
+{% block title %}Search Results{% endblock %}
+
+{% block body %}
+
+<div style="margin:auto;text-align:center" >
+
+  <h2>You searched for: <strong>{{ query }}</strong></h2>
+
+  {% if books %}
+      <h3>Found {{ books|length }} book{{ books|pluralize }}</h3>
+      <div style="text-align:center;margin-top:25px;width:1000px;margin:auto;dispaly:block">
+      {% for book in books %}
+        <div style="width:30% ;display:inline;margin:15px;float:left">
+          <a href="{% url 'azbakya:bookDetail' book.id %}"><img src="{{book.image.url}}" width="110px" height="150px"/></a>
+          <h4><a href="{% url 'azbakya:bookDetail' book.id %}">{{book.title}}</h4></a>
+
+        </div>
+      {% endfor %}
+      </div>
+  {% else %}
+      <p>No books matched your search criteria.</p>
+  {% endif %}
+
+
+
+  {% if authors %}
+
+    <div style="text-align:center;margin-top:25px;width:1000px;margin:auto;display:block">
+      <h3>Found {{ authors|length }} author{{ authors|pluralize }}</h3>
+      {% for author in authors %}
+        <div style="width:30% ;display:inline;margin:15px;float:left">
+          <a href="{% url 'azbakya:authorDetail' author.id %}">
+            <img src="{{author.image.url}}" width="160px" height="180px"/>
+          </a>
+          <h4>
+            <a href="{% url 'azbakya:authorDetail' author.id %}">
+              {{author.name}}
+            </a>
+          </h4>
+        </div>
+      {% endfor %}
+      </div>
+
+    {% else %}
+        <p>No authors matched your search criteria.</p>
+  {% endif %}
+  </div>
+
+{% endblock %}

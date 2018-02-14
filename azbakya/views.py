@@ -16,6 +16,40 @@ import json
 def index(request):
     return render(request, 'azbakya/index.html' )
 
+
+def get_user_profile(request, username):
+    user = User.objects.get(username=username)
+    image = profile.objects.get(user=user).image
+    books_read = UserBookRead.objects.filter(user=user)
+    books_wish = UserBookWish.objects.filter(user=user)
+    author_follow = UserAuthor.objects.filter(user=user)
+    return render(request, 'azbakya/user.html', {'user': user,'image': image,'books_read':books_read,'books_wish':books_wish,'author_follow':author_follow})
+
+class user_detail_view(DetailView):
+    model = User
+
+class author_list_view(ListView):
+    model = Author
+    paginate_by = 9
+    def get_context_data(self,**kwargs):
+        context = super().get_context_data(**kwargs)
+        authors = UserAuthor.objects.filter(user=self.request.user)
+        result = []
+        for i,author in enumerate(authors):
+            result.append(authors[i].author)
+        context['author_follow']= result
+        return context
+
+class author_detail_view(DetailView):
+    model = Author
+    def get_context_data(self,**kwargs):
+        context = super().get_context_data(**kwargs)
+        authors = UserAuthor.objects.filter(user=self.request.user)
+        result = []
+        for i,author in enumerate(authors):
+            result.append(authors[i].author)
+        context['author_follow']= result
+
 class book_list_view(LoginRequiredMixin,ListView):
     model = Book
     paginate_by = 6
@@ -53,6 +87,7 @@ class book_detail_view(LoginRequiredMixin,DetailView):
         context['book_read']= result1
         context['book_wish']= result2
         context['book_rate']= result3
+
         return context
 
 class category_list_view(ListView):
@@ -67,6 +102,19 @@ class category_list_view(ListView):
         context['cat_fav']= result
 
         return context
+
+
+def search(request):
+    if 'q' in request.GET :
+        q = request.GET['q']
+        books = Book.objects.filter(title__icontains=q)
+        authors = Author.objects.filter(name__icontains=q)
+        return render(request, 'azbakya/search_result.html',
+        {'authors': authors, 'books': books, 'query': q})
+
+def follow(request,authorID):
+    authorIns = Author.objects.get(pk=authorID)
+    record = UserAuthor(author = authorIns,user = request.user)
 
 def register(request):
     if request.method == 'POST':
@@ -107,16 +155,35 @@ def signin(request):
 def mark_read(request,bookID):
     bookIns = Book.objects.get(pk=bookID)
     record = UserBookRead(book = bookIns,user = request.user)
+
     record.save()
     data = {}
     return JsonResponse(data)
 
+
+def unfollow(request,authorID):
+    authorIns = Author.objects.get(pk=authorID)
+    record = UserAuthor.objects.get(author = authorIns,user = request.user)
+
 def already_read(request,bookID):
     bookIns = Book.objects.get(pk=bookID)
     record = UserBookRead.objects.get(book = bookIns,user = request.user)
+
     record.delete()
     data = {}
     return JsonResponse(data)
+
+
+def cat_fav(request,categoryID):
+    referer = request.META.get('HTTP_REFERER')
+    catIns = Category.objects.get(pk=categoryID)
+    if(CategoryUser.objects.filter(category=catIns,user=request.user)):
+        record = CategoryUser.objects.get(category=catIns,user=request.user)
+        record.delete()
+    else:
+        record = CategoryUser(category=catIns,user=request.user)
+        record.save()
+    return redirect(referer)
 
 def add_wish(request,bookID):
     bookIns = Book.objects.get(pk=bookID)
