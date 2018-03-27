@@ -9,21 +9,45 @@
   <div style="width:20% ;display:inline-block;margin:15px;float:left;border:1px solid black;padding:5px;padding-left:15px;background-color:white">
 
     <h4 style="float:left;">
-      <form action="{% url 'azbakya:cat_fav' category.id %}" method="get">
-        <input id={{category.id}} type="checkbox" onclick="this.form.submit()"/>
+      {% if category in cat_fav %}
+        <input id={{category.id}} type="checkbox" onclick="catRevFn('{{category.id}}')"/>
+        <script>document.getElementById({{category.id}}).checked = true</script>
+      {% else %}
+        <input id={{category.id}} type="checkbox" onclick="catFn('{{category.id}}')"/>
+        <script>document.getElementById({{category.id}}).checked = false</script>
+      {% endif %}
         <label>
           {{category.name}}
         </label>
 
+
         <script>
 
-          {% if category in cat_fav%}
-            check = document.getElementById({{category.id}})
-            check.checked = true
-          {% endif %}
+          var catFn = function(categoryID){
+            var xhttp = new XMLHttpRequest();
+            xhttp.responseType = 'json';
+            xhttp.onreadystatechange = function() {
+                if (this.status == 200) {
+                  document.getElementById(categoryID).checked = true
+               }
+            }
+            xhttp.open("GET", "/azbakya/cat_fav/"+categoryID);
+            xhttp.send();
+          }
+
+          var catRevFn = function(categoryID){
+            var xhttp = new XMLHttpRequest();
+            xhttp.responseType = 'json';
+            xhttp.onreadystatechange = function() {
+                if (this.status == 200) {
+                  document.getElementById(categoryID).checked = false
+               }
+            }
+            xhttp.open("GET", "/azbakya/cat_fav/"+categoryID);
+            xhttp.send();
+          }
 
         </script>
-      </form>
 
     </h4>
 

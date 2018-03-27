@@ -20,15 +20,16 @@ def index(request):
 def get_user_profile(request, username):
     user = User.objects.get(username=username)
     image = profile.objects.get(user=user).image
+    cats_fav = CategoryUser.objects.filter(user=user)
     books_read = UserBookRead.objects.filter(user=user)
     books_wish = UserBookWish.objects.filter(user=user)
     author_follow = UserAuthor.objects.filter(user=user)
-    return render(request, 'azbakya/user.html', {'user': user,'image': image,'books_read':books_read,'books_wish':books_wish,'author_follow':author_follow})
+    return render(request, 'azbakya/user.html', {'user': user,'image': image,'cats_fav':cats_fav,'books_read':books_read,'books_wish':books_wish,'author_follow':author_follow})
 
 class user_detail_view(DetailView):
     model = User
 
-class author_list_view(ListView):
+class author_list_view(LoginRequiredMixin,ListView):
     model = Author
     paginate_by = 9
     def get_context_data(self,**kwargs):
@@ -40,8 +41,9 @@ class author_list_view(ListView):
         context['author_follow']= result
         return context
 
-class author_detail_view(DetailView):
+class author_detail_view(LoginRequiredMixin,DetailView):
     model = Author
+    login_url = '/azbakya/signin'
     def get_context_data(self,**kwargs):
         context = super().get_context_data(**kwargs)
         authors = UserAuthor.objects.filter(user=self.request.user)
@@ -49,6 +51,7 @@ class author_detail_view(DetailView):
         for i,author in enumerate(authors):
             result.append(authors[i].author)
         context['author_follow']= result
+        return context
 
 class book_list_view(LoginRequiredMixin,ListView):
     model = Book
@@ -112,10 +115,6 @@ def search(request):
         return render(request, 'azbakya/search_result.html',
         {'authors': authors, 'books': books, 'query': q})
 
-def follow(request,authorID):
-    authorIns = Author.objects.get(pk=authorID)
-    record = UserAuthor(author = authorIns,user = request.user)
-
 def register(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST,request.FILES)
@@ -135,7 +134,7 @@ def signin(request):
     referer = request.META.get('HTTP_REFERER')
 
     if request.method == 'POST':
-        print(referer)
+        # print(referer)
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(username=username, password=password)
@@ -148,34 +147,42 @@ def signin(request):
                     return redirect('/azbakya/profile/' + username)
         else:
             form = SignInForm()
+            return render(request, 'azbakya/signin.html', {'form': form,'error' : "invalid Username Or Password, Please Check Your Login Data"})
     else:
         form = SignInForm()
     return render(request, 'azbakya/signin.html', {'form': form})
 
-def mark_read(request,bookID):
-    bookIns = Book.objects.get(pk=bookID)
-    record = UserBookRead(book = bookIns,user = request.user)
-
+def follow(request,authorID):
+    authorIns = Author.objects.get(pk=authorID)
+    record = UserAuthor(author = authorIns,user = request.user)
     record.save()
     data = {}
     return JsonResponse(data)
 
-
 def unfollow(request,authorID):
     authorIns = Author.objects.get(pk=authorID)
     record = UserAuthor.objects.get(author = authorIns,user = request.user)
+    record.delete()
+    data = {}
+    return JsonResponse(data)
+
+def mark_read(request,bookID):
+    bookIns = Book.objects.get(pk=bookID)
+    record = UserBookRead(book = bookIns,user = request.user)
+    record.save()
+    data = {}
+    return JsonResponse(data)
 
 def already_read(request,bookID):
     bookIns = Book.objects.get(pk=bookID)
     record = UserBookRead.objects.get(book = bookIns,user = request.user)
-
     record.delete()
     data = {}
     return JsonResponse(data)
 
 
 def cat_fav(request,categoryID):
-    referer = request.META.get('HTTP_REFERER')
+    # referer = request.META.get('HTTP_REFERER')
     catIns = Category.objects.get(pk=categoryID)
     if(CategoryUser.objects.filter(category=catIns,user=request.user)):
         record = CategoryUser.objects.get(category=catIns,user=request.user)
@@ -183,7 +190,8 @@ def cat_fav(request,categoryID):
     else:
         record = CategoryUser(category=catIns,user=request.user)
         record.save()
-    return redirect(referer)
+    data = {}
+    return JsonResponse(data)
 
 def add_wish(request,bookID):
     bookIns = Book.objects.get(pk=bookID)
@@ -215,4 +223,3 @@ def rating(request,bookID):
         record.save()
     data = {}
     return JsonResponse(data)
-

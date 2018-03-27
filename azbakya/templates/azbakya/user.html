@@ -11,37 +11,57 @@
 
   <div style="width:900px;display:inline-block;float:left;padding:30px;padding-top:0px" >
 
-    <h1>{{user.username}}</h1>
+    <h1><strong>{{user.username}}</strong></h1>
 
     <h3>
       <strong>Name : </strong>{{user.first_name}} {{user.last_name}}
-      <button>edit</button>
     </h3>
 
     <h3><strong>Date to Join : </strong>{{user.date_joined}}</h3>
 
     <h3><strong>Email : </strong>{{user.email}}</h3>
 
+    {% if cats_fav.exists %}
+    <h3>
+      <strong>Categories : </strong>
+        {% for category in cats_fav %}
+          <span>
+            <a href="#">{{category.category.name}}</a>,
+          </span>
+        {% endfor %}
+
+    </h3>
+    {% endif %}
+
+    {% if books_wish.exists %}
     <h3><strong>Book in Wishlist : </strong></h3>
     <p style="width:80%">
       {% for book in books_wish %}
         <a href="{% url 'azbakya:bookDetail' book.book.id %}"><img src="{{book.book.image.url}}" width="100px" height="130px" style="margin-right:20px;"/></a>
       {% endfor %}
     </p>
+    {% endif %}
 
+    {% if books_read.exists %}
     <h3><strong>Books Already Read: </strong></h3>
     <p style="width:80%">
       {% for book in books_read %}
         <a href="{% url 'azbakya:bookDetail' book.book.id %}"><img src="{{book.book.image.url}}" width="100px" height="130px" style="margin-right:20px;"/></a>
       {% endfor %}
     </p>
+    {% endif %}
 
+    {% if author_follow.exists %}
+    <script>
+      console.log("{{author_follow.length}}")
+    </script>
     <h3><strong>Authors Followed: </strong></h3>
     <p style="width:80%">
       {% for author in author_follow %}
         <a href="{% url 'azbakya:authorDetail' author.author.id %}"><img src="{{author.author.image.url}}" width="100px" height="130px" style="margin-right:20px;"/></a>
       {% endfor %}
     </p>
+    {% endif %}
   </div>
 </div>
 

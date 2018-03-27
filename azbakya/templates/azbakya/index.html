@@ -8,7 +8,13 @@
 </div>
 
 {% if request.user.is_authenticated %}
-  
+    <div style="text-align:center;margin:auto" >
+        <h1>Azbakya</h1>
+        <h3>Journey To The Land of Books</h3>
+        <h5>Developed By : </h5>
+        <h5>Hossam Mohamed & Mohamed Majid</h5>
+    </div>
+
 {% else %}
   <div>
     <h1 style="text-align: center;font-size:50px">Search For Books</h1>
@@ -19,6 +25,8 @@
         </div>
           <button type="submit" class="btn btn-default">Search</button>
         </form>
+        <h5>Developed By : </h5>
+        <h5>Hossam Mohamed & Mohamed Majid</h5>
     </div>
   </div>
 {% endif %}
